@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.blahti.example.drag3.DragLayer xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:launcher="http://schemas.android.com/apk/res/com.android.launcher"
+    android:id="@+id/drag_layer"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+
+        <LinearLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:orientation="vertical"
+            android:weightSum="1.0" >
+
+            <GridView
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/image_grid_view"
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:layout_weight="0.8"
+                android:background="@color/grid_background"
+                android:gravity="center"
+                android:horizontalSpacing="2dip"
+                android:numColumns="@integer/num_columns"
+                android:stretchMode="columnWidth"
+                android:verticalSpacing="2dip" />
+
+            <LinearLayout
+                android:id="@+id/bottom_part"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_centerHorizontal="true"
+                android:layout_weight="0.2"
+                android:orientation="horizontal"
+                android:weightSum="1.0" >
+
+                <Button
+                    android:id="@+id/button_add_image"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:onClick="onClickAddImage"
+                    android:text="Add image" />
+
+                <com.blahti.example.drag3.DeleteZone
+                    android:id="@+id/delete_zone_view"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/delete_zone" />
+
+                <FrameLayout
+                    xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:id="@+id/image_source_frame"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:layout_weight="0.5" >
+
+                    <ImageView
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent"
+                        android:layout_gravity="center" />
+                </FrameLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+</com.blahti.example.drag3.DragLayer>
