@@ -1,24 +1,18 @@
 package com.blahti.example.drag3;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.blahti.example.drag3.R;
 
 import android.app.Activity;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
-
 import android.util.Log;
-import android.view.Gravity;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
-import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.Toast;
 
@@ -38,16 +32,6 @@ public class DragActivity extends Activity implements View.OnLongClickListener,
 		View.OnClickListener // , AdapterView.OnItemClickListener
 {
 
-	/**
- */
-	// Constants
-
-	private static final int HIDE_TRASHCAN_MENU_ID = Menu.FIRST;
-	private static final int SHOW_TRASHCAN_MENU_ID = Menu.FIRST + 1;
-	private static final int ADD_OBJECT_MENU_ID = Menu.FIRST + 2;
-
-	/**
- */
 	// Variables
 
 	private DragController mDragController; // Object that handles a drag-drop
@@ -63,57 +47,14 @@ public class DragActivity extends Activity implements View.OnLongClickListener,
 	private ImageCell mLastNewCell = null; // The last ImageCell added to the
 											// screen when Add Image is clicked.
 
-	public static final boolean Debugging = false; // Use this to see extra
+	public static final boolean Debugging = true; // Use this to see extra
 													// toast messages.
-	private List<BookImage> bookImage;
+	public List<BookImage> bookImage;
+	public ImageCellAdapter mAdapter;
 
 	/**
  */
 	// Methods
-
-	/**
-	 * Add a new image so the user can move it around. It shows up in the
-	 * image_source_frame part of the screen.
-	 *
-	 */
-
-	public void addNewImageToScreen(int resourceId) {
-		if (mLastNewCell != null)
-			mLastNewCell.setVisibility(View.GONE);
-
-		FrameLayout imageHolder = (FrameLayout) findViewById(R.id.image_source_frame);
-		if (imageHolder != null) {
-			FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
-					LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT,
-					Gravity.CENTER);
-			ImageCell newView = new ImageCell(this);
-			newView.setImageResource(resourceId);
-			imageHolder.addView(newView, lp);
-			newView.mEmpty = false;
-			newView.mCellNumber = -1;
-			newView.setOnClickListener(this);
-			newView.setOnLongClickListener(this);
-			mLastNewCell = newView;
-			mImageCount++;
-		}
-	}
-
-	/**
-	 * Add one of the images to the screen so the user has a new image to move
-	 * around. See addImageToScreen.
-	 *
-	 */
-
-	public void addNewImageToScreen() {
-		int resourceId = R.drawable.hello;
-
-		int m = mImageCount % 3;
-		if (m == 1)
-			resourceId = R.drawable.photo1;
-		else if (m == 2)
-			resourceId = R.drawable.photo2;
-		addNewImageToScreen(resourceId);
-	}
 
 	/**
 	 * Handle a click on a view.
@@ -122,15 +63,7 @@ public class DragActivity extends Activity implements View.OnLongClickListener,
 
 	public void onClick(View v) {
 		toast("Press and hold to drag an image.");
-	}
 
-	/**
-	 * Handle a click of the Add Image button
-	 *
-	 */
-
-	public void onClickAddImage(View v) {
-		addNewImageToScreen();
 	}
 
 	/**
@@ -154,11 +87,16 @@ public class DragActivity extends Activity implements View.OnLongClickListener,
 		else {
 			bookImage = new ArrayList<BookImage>();
 			// SDカードに入っているデータを取得
-			loadFromSDCard();
-
-			gridView.setAdapter(new ImageCellAdapter(this, R.layout.demo,
-					bookImage));
-			// gridView.setOnItemClickListener (this);
+//			boolean imageChk = loadFromSDCard();
+			boolean imageChk = loadFromSelectedPath("/mnt/sdcard/sample-image");
+			if (imageChk) {
+				mAdapter = new ImageCellAdapter(this, R.layout.demo,
+						bookImage);
+				gridView.setAdapter(mAdapter);
+			} else if (!imageChk) {
+				Toast.makeText(getApplicationContext(), "画像が読み込めませんでした",
+						Toast.LENGTH_LONG).show();
+			}
 		}
 
 		mDragController = new DragController(this);
@@ -167,31 +105,6 @@ public class DragActivity extends Activity implements View.OnLongClickListener,
 		mDragLayer.setGridView(gridView);
 
 		mDragController.setDragListener(mDragLayer);
-//		 mDragController.addDropTarget (mDragLayer);
-
-		mDeleteZone = (DeleteZone) findViewById(R.id.delete_zone_view);
-
-		// Give the user a little guidance.
-		Toast.makeText(getApplicationContext(),
-				getResources().getString(R.string.instructions),
-				Toast.LENGTH_LONG).show();
-	}
-
-	/**
-	 * Build a menu for the activity.
-	 *
-	 */
-
-	public boolean onCreateOptionsMenu(Menu menu) {
-		super.onCreateOptionsMenu(menu);
-
-		menu.add(0, HIDE_TRASHCAN_MENU_ID, 0, "Hide Trashcan").setShortcut('1',
-				'c');
-		menu.add(0, SHOW_TRASHCAN_MENU_ID, 0, "Show Trashcan").setShortcut('2',
-				'c');
-		menu.add(0, ADD_OBJECT_MENU_ID, 0, "Add View").setShortcut('9', 'z');
-
-		return true;
 	}
 
 	/**
@@ -213,7 +126,7 @@ public class DragActivity extends Activity implements View.OnLongClickListener,
 	 */
 
 	public boolean onLongClick(View v) {
-		trace("onLongClick in view: " + v);
+		// trace("onLongClick in view: " + v);
 
 		// Make sure the drag was started by a long press as opposed to a long
 		// click.
@@ -225,31 +138,9 @@ public class DragActivity extends Activity implements View.OnLongClickListener,
 			toast("isInTouchMode returned false. Try touching the view again.");
 			return false;
 		}
+
+
 		return startDrag(v);
-	}
-
-	/**
-	 * Perform an action in response to a menu item being clicked.
-	 *
-	 */
-
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case HIDE_TRASHCAN_MENU_ID:
-			if (mDeleteZone != null)
-				mDeleteZone.setVisibility(View.INVISIBLE);
-			return true;
-		case SHOW_TRASHCAN_MENU_ID:
-			if (mDeleteZone != null)
-				mDeleteZone.setVisibility(View.VISIBLE);
-			return true;
-		case ADD_OBJECT_MENU_ID:
-			// Add a new object to the screen;
-			addNewImageToScreen();
-			return true;
-		}
-
-		return super.onOptionsItemSelected(item);
 	}
 
 	/**
@@ -292,31 +183,70 @@ public class DragActivity extends Activity implements View.OnLongClickListener,
 	}
 
 	// SDカードに保存されている画像を取得
-	private void loadFromSDCard() {
+	private boolean loadFromSDCard() {
 		Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 		Cursor c = this.managedQuery(uri, null, null, null, null);
+		try {
+			Log.i("COUNT", String.valueOf(c.getCount()));
+			c.moveToFirst();
 
-		Log.i("COUNT", String.valueOf(c.getCount()));
-		c.moveToFirst();
-		while (c.getCount() > 0 && !c.isLast()) {
-//			Log.i(TAG, "ID = " + c.getString(c.getColumnIndexOrThrow("_id")));
-//			Log.i(TAG, "ID = " + c.getString(c.getColumnIndexOrThrow("_data")));
+			while (c.getCount() > 0 && !c.isLast()) {
+				// Log.i(TAG, "ID = " +
+				// c.getString(c.getColumnIndexOrThrow("_id")));
+				// Log.i(TAG, "ID = " +
+				// c.getString(c.getColumnIndexOrThrow("_data")));
+
+				BookImage bImage = new BookImage();
+
+				// 左画像URLを配列に格納
+				bImage.setLeftImagePath(c.getString(c
+						.getColumnIndexOrThrow("_data")));
+
+				if (!c.isLast()) {
+					c.moveToNext();
+					// 右画像URLを配列に格納
+					bImage.setRightImagePath(c.getString(c
+							.getColumnIndexOrThrow("_data")));
+					if (!c.isLast())
+						c.moveToNext();
+				}
+				bookImage.add(bImage);
+
+			}
+			return true;
+		} catch (NullPointerException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	private boolean loadFromSelectedPath(String path) {
+//		private List<string> imgList = new ArrayList<string>();   // 画像PATH格納用
+        // 外部ストレージ(SDカード)のデレクトリPATHを取得
+        File file = new File(path);
+
+        String imageFiles[] = file.list();
+        // 指定ディレクトリ内のファイル検索
+        int i = 0;
+		while (imageFiles.length > i) {
 
 			BookImage bImage = new BookImage();
 
-			// 左画像URLを配列に格納
-			bImage.setLeftImagePath(c.getString(c
-					.getColumnIndexOrThrow("_data")));
-
-			if (!c.isLast()) {
-				c.moveToNext();
-				// 右画像URLを配列に格納
-				bImage.setRightImagePath(c.getString(c
-						.getColumnIndexOrThrow("_data")));
-				if (!c.isLast())
-					c.moveToNext();
+			bImage.setLeftImagePath(path + "/" + imageFiles[i]);
+			if (imageFiles.length > i + 1) {
+				bImage.setRightImagePath(path + "/" + imageFiles[++i]);
+			} else {
+				Log.i("ttt", imageFiles[i]);
 			}
-			bookImage.add(bImage);
+
+			this.bookImage.add(bImage);
+			i++;
 		}
+
+
+		return true;
+
 	}
 } // end class

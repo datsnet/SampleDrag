@@ -11,45 +11,108 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-public class ImageLinearLayout extends LinearLayout implements DragSource, DropTarget {
+public class ImageLinearLayout extends LinearLayout implements DragSource,
+		DropTarget, Cloneable {
 
-    public boolean mEmpty = true;
-    public int mCellNumber = -1;
-    public GridView mGrid;
+	public boolean mEmpty = true;
+	public int mCellNumber = -1;
+	public GridView mGrid;
+	public ImageCell leftImage;
+	public ImageCell rightImage;
+	public int targetId;
+	public int sourceId;
+	private ImageCellAdapter mAdapter;
 
 	public ImageLinearLayout(Context context) {
 		super(context);
 	}
-	public ImageLinearLayout (Context context, AttributeSet attrs) {
-		super (context, attrs);
+
+	public ImageLinearLayout(Context context, ImageCellAdapter adapter) {
+		super(context);
+		this.mAdapter = adapter;
 	}
+
+	public ImageLinearLayout(Context context, AttributeSet attrs) {
+		super(context, attrs);
+	}
+
+    public ImageLinearLayout clone() {
+        try {
+        	ImageLinearLayout myClone = (ImageLinearLayout)super.clone();
+            //参照型のフィールドにもclone()
+        	myClone.leftImage = (ImageCell) ((ImageCell)myClone.getChildAt(0)).clone();
+        	myClone.rightImage = (ImageCell) ((ImageCell)myClone.getChildAt(2)).clone();
+        	myClone.targetId = this.sourceId;
+            return myClone;
+        } catch (CloneNotSupportedException e) {
+        	e.printStackTrace();
+            return null;
+        }
+
+    }
 
 	@Override
 	public void onDrop(DragSource source, int x, int y, int xOffset,
 			int yOffset, DragView dragView, Object dragInfo) {
-	    // Mark the cell so it is no longer empty.
-	    mEmpty = false;
-	    int bg = mEmpty ? R.color.cell_empty : R.color.cell_filled;
-	    setBackgroundResource (bg);
+		// Mark the cell so it is no longer empty.
+		mEmpty = false;
+		ImageLinearLayout sourceView = (ImageLinearLayout) source;
+		ImageCell leftView = null;
+		ImageCell rightView = null;
+		leftView = (ImageCell) sourceView.getChildAt(0);
+		rightView = (ImageCell) sourceView.getChildAt(2);
 
-	    // The view being dragged does not actually change its parent and switch over to the ImageCell.
-	    // What we do is copy the drawable from the source view.
-	    ImageView sourceView = (ImageView) source;
-	    Drawable d = sourceView.getDrawable ();
-	    if (d != null) {
-//	       this.setImageDrawable (d);
-
-	    }
-
-	     toast ("onDrop cell " + mCellNumber);
-
+		Drawable dLeft = leftView.getDrawable();
+		Drawable dRight = rightView.getDrawable();
+		((ImageView) this.getChildAt(0)).setImageDrawable(dLeft);
+		((ImageView) this.getChildAt(0)).setImageDrawable(dRight);
 	}
 
 	@Override
+	public void onDropCompleted(View target, boolean success) {
+		// If the drop succeeds, the image has moved elsewhere.
+		// So clear the image cell.
+		if (success) {
+
+			ImageLinearLayout targetView = (ImageLinearLayout) target;
+
+			Drawable dLeft = targetView.leftImage.getDrawable();
+			Drawable dRight = targetView.rightImage.getDrawable();
+			((ImageView) this.getChildAt(0)).setImageDrawable(dLeft);
+			((ImageView) this.getChildAt(2)).setImageDrawable(dRight);
+
+//			int i = 0;
+//			while(5 > i) {
+//				Log.i("111", this.mAdapter.mImageList.get(i).getLeftImagePath());
+//				Log.i("R111", this.mAdapter.mImageList.get(i).getRightImagePath());
+//				i++;
+//			}
+
+			// 格納ブックオブジェクトの交換
+			BookImage sourceBook = this.mAdapter.mImageList.get(this.sourceId);
+			BookImage targetBook = this.mAdapter.mImageList.get(targetView.mCellNumber);
+
+			// 位置交換
+			this.mAdapter.mImageList.set(targetView.mCellNumber , sourceBook);
+			this.mAdapter.mImageList.set(this.sourceId , targetBook);
+
+			this.mAdapter.notifyDataSetChanged();
+//			int j = 0;
+//			while(5 > j) {
+//				Log.i("555", this.mAdapter.mImageList.get(j).getLeftImagePath());
+//				Log.i("R555", this.mAdapter.mImageList.get(j).getRightImagePath());
+//				j++;
+//			}
+
+		}
+
+	}
+	@Override
 	public void onDragEnter(DragSource source, int x, int y, int xOffset,
 			int yOffset, DragView dragView, Object dragInfo) {
-	    int bg = mEmpty ? R.color.cell_empty_hover : R.color.cell_filled_hover;
-	    setBackgroundResource (bg);
+		setBackgroundResource(R.color.cell_empty_hover);
+		ImageLinearLayout dragInfoLayout = (ImageLinearLayout) dragInfo;
+		this.sourceId = dragInfoLayout.mCellNumber;
 
 	}
 
@@ -62,15 +125,15 @@ public class ImageLinearLayout extends LinearLayout implements DragSource, DropT
 	@Override
 	public void onDragExit(DragSource source, int x, int y, int xOffset,
 			int yOffset, DragView dragView, Object dragInfo) {
-	    int bg = mEmpty ? R.color.cell_empty : R.color.cell_filled;
-	    setBackgroundResource (bg);
+		setBackgroundResource(0);
 
 	}
 
 	@Override
 	public boolean acceptDrop(DragSource source, int x, int y, int xOffset,
 			int yOffset, DragView dragView, Object dragInfo) {
-		return mEmpty  && (mCellNumber >= 0);
+		// return mEmpty && (mCellNumber >= 0);
+		return true;
 	}
 
 	@Override
@@ -79,22 +142,21 @@ public class ImageLinearLayout extends LinearLayout implements DragSource, DropT
 			Rect recycle) {
 		return null;
 	}
+
 	/**
-	 * Return true if this cell is empty.
-	 * If it is, it means that it will accept dropped views.
-	 * It also means that there is nothing to drag.
+	 * Return true if this cell is empty. If it is, it means that it will accept
+	 * dropped views. It also means that there is nothing to drag.
 	 *
 	 * @return boolean
 	 */
 
-	public boolean isEmpty ()
-	{
-	    return mEmpty;
+	public boolean isEmpty() {
+		return mEmpty;
 	}
 
 	/**
-	 * Call this view's onClick listener. Return true if it was called.
-	 * Clicks are ignored if the cell is empty.
+	 * Call this view's onClick listener. Return true if it was called. Clicks
+	 * are ignored if the cell is empty.
 	 *
 	 * @return boolean
 	 */
@@ -103,28 +165,10 @@ public class ImageLinearLayout extends LinearLayout implements DragSource, DropT
 	public void setDragController(DragController dragger) {
 	}
 
-	@Override
-	public void onDropCompleted(View target, boolean success) {
-	    // If the drop succeeds, the image has moved elsewhere.
-	    // So clear the image cell.
-	    if (success) {
-	       mEmpty = true;
-	       if (mCellNumber >= 0) {
-	          int bg = mEmpty ? R.color.cell_empty : R.color.cell_filled;
-	          setBackgroundResource (bg);
-//	          setImageDrawable (null);
-	       } else {
-	         // For convenience, we use a free-standing ImageCell to
-	         // take the image added when the Add Image button is clicked.
-//	         setImageResource (0);
-	       }
-	    }
-
-	}
-	public boolean performClick ()
-	{
-	    if (!mEmpty) return super.performClick ();
-	    return false;
+	public boolean performClick() {
+		if (!mEmpty)
+			return super.performClick();
+		return false;
 	}
 
 	/**
@@ -134,15 +178,16 @@ public class ImageLinearLayout extends LinearLayout implements DragSource, DropT
 	 * @return boolean
 	 */
 
-	public boolean performLongClick ()
-	{
-	    if (!mEmpty) return super.performLongClick ();
-	    	return super.performLongClick ();
-//	    return false;
+	public boolean performLongClick() {
+		if (!mEmpty)
+			return super.performLongClick();
+		return super.performLongClick();
+		// return false;
 	}
-	public void toast (String msg)
-	{
-	    if (!DragActivity.Debugging) return;
-	    Toast.makeText (getContext (), msg, Toast.LENGTH_SHORT).show ();
+
+	public void toast(String msg) {
+		if (!DragActivity.Debugging)
+			return;
+		Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
 	}
 }

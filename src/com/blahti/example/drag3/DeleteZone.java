@@ -34,7 +34,7 @@ public DeleteZone (Context context) {
 public DeleteZone (Context context, AttributeSet attrs) {
 	super (context, attrs);
 }
-public DeleteZone (Context context, AttributeSet attrs, int style) 
+public DeleteZone (Context context, AttributeSet attrs, int style)
 {
 	super (context, attrs, style);
 }
@@ -53,7 +53,7 @@ private boolean mEnabled = true;
 
 /**
  * Get the value of the DragController property.
- * 
+ *
  * @return DragController
  */
 
@@ -64,7 +64,7 @@ public DragController getDragController ()
 
 /**
  * Set the value of the DragController property.
- * 
+ *
  * @param newValue DragController
  */
 
@@ -81,7 +81,7 @@ public void setDragController (DragController newValue)
 /**
  * Handle an object being dropped on the DropTarget.
  * For a DeleteZone, we don't really do anything because we want the view being dragged to vanish.
- * 
+ *
  * @param source DragSource where the drag started
  * @param x X coordinate of the drop location
  * @param y Y coordinate of the drop location
@@ -91,7 +91,7 @@ public void setDragController (DragController newValue)
  *          touch happened
  * @param dragView The DragView that's being dragged around on screen.
  * @param dragInfo Data associated with the object being dragged
- * 
+ *
  */
 public void onDrop(DragSource source, int x, int y, int xOffset, int yOffset,
         DragView dragView, Object dragInfo)
@@ -103,7 +103,7 @@ public void onDrop(DragSource source, int x, int y, int xOffset, int yOffset,
 /**
  * React to a dragged object entering the area of this DeleteZone.
  * Provide the user with some visual feedback.
- */    
+ */
 public void onDragEnter(DragSource source, int x, int y, int xOffset, int yOffset,
         DragView dragView, Object dragInfo)
 {
@@ -113,7 +113,7 @@ public void onDragEnter(DragSource source, int x, int y, int xOffset, int yOffse
 
 /**
  * React to something being dragged over the drop target.
- */    
+ */
 public void onDragOver(DragSource source, int x, int y, int xOffset, int yOffset,
         DragView dragView, Object dragInfo)
 {
@@ -122,7 +122,7 @@ public void onDragOver(DragSource source, int x, int y, int xOffset, int yOffset
 /**
  * React to a dragged object leaving the area of this DeleteZone.
  * Provide the user with some visual feedback.
- */    
+ */
 public void onDragExit(DragSource source, int x, int y, int xOffset, int yOffset,
         DragView dragView, Object dragInfo)
 {
@@ -133,7 +133,7 @@ public void onDragExit(DragSource source, int x, int y, int xOffset, int yOffset
  * Check if a drop action can occur at, or near, the requested location.
  * This may be called repeatedly during a drag, so any calls should return
  * quickly.
- * 
+ *
  * @param source DragSource where the drag started
  * @param x X coordinate of the drop location
  * @param y Y coordinate of the drop location
@@ -154,7 +154,7 @@ public boolean acceptDrop(DragSource source, int x, int y, int xOffset, int yOff
 /**
  * Estimate the surface area where this object would land if dropped at the
  * given location.
- * 
+ *
  * @param source DragSource where the drag started
  * @param x X coordinate of the drop location
  * @param y Y coordinate of the drop location
@@ -182,7 +182,7 @@ public Rect estimateDropLocation(DragSource source, int x, int y, int xOffset, i
 /**
  * Return true if this DeleteZone is enabled.
  * If it is, it means that it will accept dropped views.
- * 
+ *
  * @return boolean
  */
 
@@ -213,7 +213,7 @@ public void setup (DragController controller)
 
 /**
  * Show a string on the screen via Toast.
- * 
+ *
  * @param msg String
  * @return void
  */

@@ -1,7 +1,7 @@
 /*
  * This is a modified version of a class from the Android
  * Open Source Project. The original copyright and license information follows.
- * 
+ *
  * Copyright (C) 2008 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,7 +41,7 @@ import java.util.ArrayList;
  * until the user ends the drag. As feedback to the user, this object causes the device to
  * vibrate as the drag begins. It interacts with other objects through methods defined
  * in the DropTarget and DragSource interfaces.
- * 
+ *
  * <p> It also supports the DragListener interface for objects that want to be
  * notified when objects are dragged and dropped.
  *
@@ -115,23 +115,23 @@ public class DragController {
      * Interface to receive notifications when a drag starts or stops
      */
     interface DragListener {
-        
+
         /**
          * A drag has begun
-         * 
+         *
          * @param source An object representing where the drag originated
          * @param info The data associated with the object that is being dragged
          * @param dragAction The drag action: either {@link DragController#DRAG_ACTION_MOVE}
          *        or {@link DragController#DRAG_ACTION_COPY}
          */
         public void onDragStart(DragSource source, Object info, int dragAction);
-        
+
         /**
          * The drag has eneded
          */
         public void onDragEnd();
     }
-    
+
     /**
      * Used to create a new DragLayer from XML.
      *
@@ -144,10 +144,10 @@ public class DragController {
     }
 
     /**
-     * Starts a drag. 
+     * Starts a drag.
      * It creates a bitmap of the view being dragged. That bitmap is what you see moving.
      * The actual view can be repositioned if that is what the onDrop handle chooses to do.
-     * 
+     *
      * @param v The view that is being dragged
      * @param source An object representing where the drag originated
      * @param dragInfo The data associated with the object that is being dragged
@@ -175,13 +175,14 @@ public class DragController {
         b.recycle();
 
         if (dragAction == DRAG_ACTION_MOVE) {
-            v.setVisibility(View.GONE);
+//            v.setVisibility(View.GONE);
+        	v.setVisibility(View.INVISIBLE);
         }
     }
 
     /**
      * Starts a drag.
-     * 
+     *
      * @param b The bitmap to display as the drag image.  It will be re-scaled to the
      *          enlarged size.
      * @param screenX The x position on screen of the left-top of the bitmap.
@@ -342,7 +343,7 @@ public class DragController {
      */
     void setMoveTarget(View view) {
         mMoveTarget = view;
-    }    
+    }
 
     public boolean dispatchUnhandledMove(View focused, int direction) {
         return mMoveTarget != null && mMoveTarget.dispatchUnhandledMove(focused, direction);
@@ -393,36 +394,6 @@ public class DragController {
             }
             mLastDropTarget = dropTarget;
 
-            /* The original Launcher activity supports a delete region and scrolling.
-               It is not needed in this example.
-            
-            // Scroll, maybe, but not if we're in the delete region.
-            boolean inDeleteRegion = false;
-            if (mDeleteRegion != null) {
-                inDeleteRegion = mDeleteRegion.contains(screenX, screenY);
-            }
-            //Log.d(TAG, "inDeleteRegion=" + inDeleteRegion + " screenX=" + screenX
-            //        + " mScrollZone=" + mScrollZone);
-            if (!inDeleteRegion && screenX < mScrollZone) {
-                if (mScrollState == SCROLL_OUTSIDE_ZONE) {
-                    mScrollState = SCROLL_WAITING_IN_ZONE;
-                    mScrollRunnable.setDirection(SCROLL_LEFT);
-                    mHandler.postDelayed(mScrollRunnable, SCROLL_DELAY);
-                }
-            } else if (!inDeleteRegion && screenX > scrollView.getWidth() - mScrollZone) {
-                if (mScrollState == SCROLL_OUTSIDE_ZONE) {
-                    mScrollState = SCROLL_WAITING_IN_ZONE;
-                    mScrollRunnable.setDirection(SCROLL_RIGHT);
-                    mHandler.postDelayed(mScrollRunnable, SCROLL_DELAY);
-                }
-            } else {
-                if (mScrollState == SCROLL_WAITING_IN_ZONE) {
-                    mScrollState = SCROLL_OUTSIDE_ZONE;
-                    mScrollRunnable.setDirection(SCROLL_RIGHT);
-                    mHandler.removeCallbacks(mScrollRunnable);
-                }
-            }
-            */
             break;
         case MotionEvent.ACTION_UP:
             if (mDragging) {
@@ -442,15 +413,23 @@ public class DragController {
 
         final int[] coordinates = mCoordinatesTemp;
         DropTarget dropTarget = findDropTarget((int) x, (int) y, coordinates);
-
         if (dropTarget != null) {
             dropTarget.onDragExit(mDragSource, coordinates[0], coordinates[1],
                     (int) mTouchOffsetX, (int) mTouchOffsetY, mDragView, mDragInfo);
             if (dropTarget.acceptDrop(mDragSource, coordinates[0], coordinates[1],
                     (int) mTouchOffsetX, (int) mTouchOffsetY, mDragView, mDragInfo)) {
-                dropTarget.onDrop(mDragSource, coordinates[0], coordinates[1],
+            	DropTarget dropTargetCopy = null;
+            	// 一旦退避させる
+            	if (dropTarget instanceof ImageCell) {
+            		dropTargetCopy = ((DropTarget) ((ImageCell) dropTarget).clone());
+            	} else if (dropTarget instanceof ImageLinearLayout) {
+            		dropTargetCopy = ((DropTarget) ((ImageLinearLayout) dropTarget).clone());
+            	}
+            	dropTarget.onDrop(mDragSource, coordinates[0], coordinates[1],
                         (int) mTouchOffsetX, (int) mTouchOffsetY, mDragView, mDragInfo);
-                mDragSource.onDropCompleted((View) dropTarget, true);
+
+//                mDragSource.onDropCompleted((View) dropTargetCopy, true);
+            	mDragSource.onDropCompleted((View) dropTargetCopy, true);
                 return true;
             } else {
                 mDragSource.onDropCompleted((View) dropTarget, false);
@@ -525,7 +504,12 @@ public class DragController {
     public void addDropTarget(DropTarget target) {
         mDropTargets.add(target);
     }
-
+    /**
+     * Add a DropTarget for ImageCell to the list of potential places to receive drop events.
+     */
+    public void addDropTargetForImageCell(DropTarget target) {
+        mDropTargets.add(target);
+    }
     /**
      * Don't send drop events to <em>target</em> any more.
      */

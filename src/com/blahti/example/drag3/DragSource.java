@@ -1,7 +1,7 @@
 /*
- * This is a modified version of a class from the Android Open Source Project. 
+ * This is a modified version of a class from the Android Open Source Project.
  * The original copyright and license information follows.
- * 
+ *
  * Copyright (C) 2008 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

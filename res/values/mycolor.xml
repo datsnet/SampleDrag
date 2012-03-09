@@ -12,4 +12,5 @@
 <color name="drop_target_color2">#FFA99033</color>
 <color name="drop_target_enabled">#FF009933</color>
 <color name="drop_target_disabled">#FFdddddd</color>
+<color name="cell_test">#000000</color>
 </resources>

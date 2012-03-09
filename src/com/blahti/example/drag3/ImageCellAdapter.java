@@ -3,9 +3,7 @@ package com.blahti.example.drag3;
 import java.util.List;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,45 +21,32 @@ import android.widget.LinearLayout;
 
 public class ImageCellAdapter extends ArrayAdapter<BookImage> {
 
-	// Constants
-	public static final int DEFAULT_NUM_IMAGES = 8;
-
-	/**
- */
 	// Variables
 	public ViewGroup mParentView = null;
 	private Context mContext;
-	private List<BookImage> imageList;
+//	private List<BookImage> mImageList;
+	public List<BookImage> mImageList;
 	private DragController mDragController; // Object that handles a drag-drop
-
-	// public ImageCellAdapter(Context c)
-	// {
-	// mContext = c;
-	// }
-	//
-	// public ImageCellAdapter(Context context, int resourceId, List<Book>
-	// imagList) {
-	//
-	// }
 
 	public ImageCellAdapter(Context context, int resource,
 			List<BookImage> objects) {
 		super(context, resource, objects);
 		this.mContext = context;
-		this.imageList = objects;
+		this.mImageList = objects;
 	}
 
 	/**
 	 * getCount
 	 */
 	public int getCount() {
-		Resources res = mContext.getResources();
-		int numImages = res.getInteger(R.integer.num_images);
-		return numImages;
+//		Resources res = mContext.getResources();
+//		int numImages = res.getInteger(R.integer.num_images);
+//		return numImages;
+		return mImageList.size();
 	}
 
 	public BookImage getItem(int position) {
-		return null;
+		return mImageList.get(position);
 	}
 
 	public long getItemId(int position) {
@@ -82,15 +67,22 @@ public class ImageCellAdapter extends ArrayAdapter<BookImage> {
 		ImageLinearLayout centerView = null;
 
 		if (convertView == null) {
-			layout = new ImageLinearLayout(mContext);
+//			layout = new ImageLinearLayout(mContext);
+			layout = new ImageLinearLayout(mContext, (ImageCellAdapter)this);
 			layout.setGravity(LinearLayout.HORIZONTAL);
+			layout.setOnClickListener((View.OnClickListener) mContext);
+			layout.setOnLongClickListener((View.OnLongClickListener) mContext);
 
-			leftImg = new ImageCell(mContext);
+
+			leftImg = new ImageCell(mContext, (ImageCellAdapter)this);
 			// If it's not recycled, create a new ImageCell.
 			leftImg.setLayoutParams(new GridView.LayoutParams(85, 85));
 			leftImg.setScaleType(ImageView.ScaleType.CENTER_CROP);
 			leftImg.setPadding(8, 8, 8, 8);
 			leftImg.setTag("LEFT_PAGE");
+			// Set up to be a drop target and drag source.
+			leftImg.setOnClickListener((View.OnClickListener) mContext);
+			leftImg.setOnLongClickListener((View.OnLongClickListener) mContext);
 
 			rightImg = new ImageCell(mContext);
 			// If it's not recycled, create a new ImageCell.
@@ -98,6 +90,9 @@ public class ImageCellAdapter extends ArrayAdapter<BookImage> {
 			rightImg.setScaleType(ImageView.ScaleType.CENTER_CROP);
 			rightImg.setPadding(8, 8, 8, 8);
 			rightImg.setTag("RIGHT_PAGE");
+			// Set up to be a drop target and drag source.
+			rightImg.setOnClickListener((View.OnClickListener) mContext);
+			rightImg.setOnLongClickListener((View.OnLongClickListener) mContext);
 
 
 			// 真ん中に両方選択する用の判定Layout追加
@@ -106,11 +101,10 @@ public class ImageCellAdapter extends ArrayAdapter<BookImage> {
 			centerView.setTag("CENTER_PAGE");
 			LinearLayout.LayoutParams layoutParams =
 		              new LinearLayout.LayoutParams(20, LinearLayout.LayoutParams.WRAP_CONTENT);
-//			centerView.setLayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT);
-//			centerView.setLayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-//			layoutParams.setMargins(20, 10, 10, 20);
+//			layoutParams.setMargins(5, 10, 5, 10);
 			centerView.setLayoutParams(layoutParams);
-
+			centerView.setOnClickListener((View.OnClickListener) mContext);
+			centerView.setOnLongClickListener((View.OnLongClickListener) mContext);
 
 
 			layout.addView(leftImg);
@@ -123,51 +117,37 @@ public class ImageCellAdapter extends ArrayAdapter<BookImage> {
 			centerView = (ImageLinearLayout)layout.findViewWithTag("CENTER_PAGE");
 		}
 
+		layout.mCellNumber = position;
+		layout.mGrid = (GridView) mParentView;
+
 		leftImg.mCellNumber = position;
 		leftImg.mGrid = (GridView) mParentView;
 		leftImg.mEmpty = true;
-		// v.setBackgroundResource (R.color.drop_target_enabled);
-		leftImg.setBackgroundResource(R.color.cell_empty);
 
-		// v.mGrid.requestDisallowInterceptTouchEvent (true);
 
-		// v.setImageResource (R.drawable.hello);
-
-		// Set up to be a drop target and drag source.
-		leftImg.setOnClickListener((View.OnClickListener) mContext);
-		leftImg.setOnLongClickListener((View.OnLongClickListener) mContext);
 
 		rightImg.mCellNumber = position;
 		rightImg.mGrid = (GridView) mParentView;
 		rightImg.mEmpty = true;
-		// v.setBackgroundResource (R.color.drop_target_enabled);
-		rightImg.setBackgroundResource(R.color.cell_empty);
-
-		// v.mGrid.requestDisallowInterceptTouchEvent (true);
-
-		// v.setImageResource (R.drawable.hello);
-
-		// Set up to be a drop target and drag source.
-		rightImg.setOnClickListener((View.OnClickListener) mContext);
-		rightImg.setOnLongClickListener((View.OnLongClickListener) mContext);
-
 
 		// 両方選択用
-//		centerView.setOnClickListener((ImageLinearLayout.OnClickListener) mContext);
-//		centerView.setOnLongClickListener((ImageLinearLayout.OnLongClickListener) mContext);
-//		centerView.setBackgroundColor(Color.YELLOW);
-		layout.setOnClickListener((View.OnClickListener) mContext);
-		layout.setOnLongClickListener((View.OnLongClickListener) mContext);
+		layout.mCellNumber = position;
+		layout.mGrid = (GridView) mParentView;
+		layout.mEmpty = true;
 
 		// ビットマップ変換
 		BitmapFactory.Options bmpOp = new BitmapFactory.Options();
-		bmpOp.inSampleSize = 5;
+		bmpOp.inSampleSize = 2;
 
-		BookImage bookImage = imageList.get(position);
+		BookImage bookImage = mImageList.get(position);
 		leftImg.setImageBitmap(BitmapFactory.decodeFile(
 				bookImage.getLeftImagePath(), bmpOp));
-		rightImg.setImageBitmap(BitmapFactory.decodeFile(
-				bookImage.getRightImagePath(), bmpOp));
+		if (bookImage.getRightImagePath() != null) {
+			rightImg.setImageBitmap(BitmapFactory.decodeFile(
+					bookImage.getRightImagePath(), bmpOp));
+		}
+
+		Log.i("getView", String.valueOf(position));
 
 		return layout;
 	}
@@ -199,4 +179,10 @@ public class ImageCellAdapter extends ArrayAdapter<BookImage> {
 		return true;
 	}
 
+	public boolean setBookList(int prePosition, int posPosition) {
+		return false;
+	}
+	public void setFresh() {
+		this.notifyDataSetChanged();
+	}
 }

@@ -16,6 +16,7 @@ public final class R {
         public static final int cell_empty_hover=0x7f050003;
         public static final int cell_filled=0x7f050002;
         public static final int cell_filled_hover=0x7f050004;
+        public static final int cell_test=0x7f05000c;
         public static final int drop_target_color1=0x7f050008;
         public static final int drop_target_color2=0x7f050009;
         public static final int drop_target_disabled=0x7f05000b;
@@ -64,11 +65,8 @@ public final class R {
     }
     public static final class id {
         public static final int bottom_part=0x7f080002;
-        public static final int button_add_image=0x7f080003;
-        public static final int delete_zone_view=0x7f080004;
         public static final int drag_layer=0x7f080000;
         public static final int image_grid_view=0x7f080001;
-        public static final int image_source_frame=0x7f080005;
     }
     public static final class integer {
         public static final int num_columns=0x7f070001;
