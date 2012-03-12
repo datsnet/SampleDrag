@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 /**
@@ -137,6 +138,10 @@ public class DragActivity extends Activity implements View.OnLongClickListener,
 		if (!v.isInTouchMode()) {
 			toast("isInTouchMode returned false. Try touching the view again.");
 			return false;
+		}
+		if (v instanceof LinearLayout) {
+			ImageLinearLayout parent = (ImageLinearLayout)v.getParent();
+			return startDrag(parent);
 		}
 
 

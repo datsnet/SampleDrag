@@ -74,9 +74,10 @@ public class ImageCellAdapter extends ArrayAdapter<BookImage> {
 //			layout = new ImageLinearLayout(mContext);
 			layout = new ImageLinearLayout(mContext, (ImageCellAdapter)this);
 //			layout.setGravity(LinearLayout.HORIZONTAL);
-			layout.setForegroundGravity(Gravity.CENTER_HORIZONTAL);
-			layout.setOnClickListener((View.OnClickListener) mContext);
-			layout.setOnLongClickListener((View.OnLongClickListener) mContext);
+//			layout.setForegroundGravity(Gravity.CENTER_HORIZONTAL);
+//			layout.setOnClickListener((View.OnClickListener) mContext);
+//			layout.setOnLongClickListener((View.OnLongClickListener) mContext);
+//			layout.setClickable(false);
 
 
 			leftImg = new ImageCell(mContext, (ImageCellAdapter)this);
@@ -89,7 +90,7 @@ public class ImageCellAdapter extends ArrayAdapter<BookImage> {
 			leftImg.setOnClickListener((View.OnClickListener) mContext);
 			leftImg.setOnLongClickListener((View.OnLongClickListener) mContext);
 
-			rightImg = new ImageCell(mContext);
+			rightImg = new ImageCell(mContext, (ImageCellAdapter)this);
 			// If it's not recycled, create a new ImageCell.
 			rightImg.setLayoutParams(new GridView.LayoutParams(85, 85));
 			rightImg.setScaleType(ImageView.ScaleType.CENTER_CROP);
@@ -105,38 +106,44 @@ public class ImageCellAdapter extends ArrayAdapter<BookImage> {
 			centerView = new LinearLayout(mContext);
 
 			centerView.setTag("CENTER_PAGE");
-			LinearLayout.LayoutParams layoutParams =
-		              new LinearLayout.LayoutParams(60, 60);
-//			layoutParams.setMargins(50, 100, 50, 100);
-			
-			centerView.setLayoutParams(layoutParams);
+//			LinearLayout.LayoutParams layoutParams =
+//		              new LinearLayout.LayoutParams(60, 60);
+////			layoutParams.setMargins(50, 100, 50, 100);
+//
+//			centerView.setLayoutParams(layoutParams);
 			centerView.setOnClickListener((View.OnClickListener) mContext);
 			centerView.setOnLongClickListener((View.OnLongClickListener) mContext);
 			centerView.setBackgroundColor(Color.YELLOW);
 
+
 			int WC = ViewGroup.LayoutParams.WRAP_CONTENT;
-			
+			int MP = ViewGroup.LayoutParams.MATCH_PARENT;
+
 			// 左レイアウトをセット
+//			FrameLayout.LayoutParams layoutParamsLeft = new FrameLayout.LayoutParams(WC, WC);
 			FrameLayout.LayoutParams layoutParamsLeft = new FrameLayout.LayoutParams(WC, WC);
 			layoutParamsLeft.gravity = Gravity.LEFT | Gravity.TOP;
+//			layoutParamsLeft.gravity = Gravity.LEFT;
 			layoutParamsLeft.leftMargin = 0;
 			layoutParamsLeft.topMargin = 0;
-			
+
 			// センターレイアウトをセット
 			FrameLayout.LayoutParams layoutParamsCenter = new FrameLayout.LayoutParams(40, 85);
 			layoutParamsCenter.gravity = Gravity.LEFT | Gravity.TOP;
+//			layoutParamsLeft.gravity = Gravity.LEFT;
 			layoutParamsCenter.leftMargin = 40;
 			layoutParamsCenter.topMargin = 0;
-			
+
 			// 右レイアウトをセット
 			FrameLayout.LayoutParams layoutParamsRight = new FrameLayout.LayoutParams(WC, WC);
 			layoutParamsRight.gravity = Gravity.LEFT | Gravity.TOP;
+//			layoutParamsRight.gravity = Gravity.LEFT;
 			layoutParamsRight.leftMargin = 70;
 			layoutParamsRight.topMargin = 0;
 			layout.addView(leftImg, layoutParamsLeft);
 			layout.addView(centerView, layoutParamsCenter);
 			layout.addView(rightImg, layoutParamsRight);
-			
+
 		} else {
 			layout = (ImageLinearLayout) convertView;
 			leftImg = (ImageCell) layout.findViewWithTag("LEFT_PAGE");

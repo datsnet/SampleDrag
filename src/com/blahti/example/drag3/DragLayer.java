@@ -28,6 +28,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.GridView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 /**
@@ -139,9 +140,13 @@ public class DragLayer extends FrameLayout implements
 							.getChildAt(i);
 					int numVisibleChildren = layout.getChildCount();
 					for (int imgCellLoopIdx = 0; imgCellLoopIdx < numVisibleChildren; imgCellLoopIdx++) {
-						DropTarget view = (DropTarget) layout
-								.getChildAt(imgCellLoopIdx);
-						mDragController.addDropTarget(view);
+
+						// 左ImageCellと右ImageCellオブジェクトをターゲットにセット
+						if (layout.getChildAt(imgCellLoopIdx) instanceof ImageCell) {
+							DropTarget view = (DropTarget) layout
+									.getChildAt(imgCellLoopIdx);
+								mDragController.addDropTarget(view);
+						}
 					}
 				}
 			} else if (source instanceof ImageLinearLayout) {

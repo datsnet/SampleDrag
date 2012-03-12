@@ -6,6 +6,7 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -35,6 +36,9 @@ public class ImageCell extends ImageView implements DragSource, DropTarget,
 	private Context mContext;
 	private ImageCellAdapter mAdapter;
 	private List<BookImage> mImageList;
+	private int sourceId;
+	private int LEFT_IMAGECELL_INDEX = 0;
+	private int RIGHT_IMAGECELL_INDEX = 2;
 
 	/**
 	 * Constructors
@@ -93,21 +97,69 @@ public class ImageCell extends ImageView implements DragSource, DropTarget,
 		// So clear the image cell.
 		if (success) {
 			ImageView sourceView = (ImageView) target;
+			ImageCell sourceImageCell = this;
+
+			ImageCell targetImageCell = (ImageCell) target;
+			ImageLinearLayout parentTargetView = (ImageLinearLayout) target.getParent();
 			Drawable d = sourceView.getDrawable();
 			if (d != null) {
 
-				this.setImageDrawable(d);
-//				mAdapter.getItem(this.mCellNumber);
-//				mAdapter.mImageList.add(location, object);
-//				mAdapter.mImageList.get(this.mCellNumber);
 
-//				mAdapter.set
-//				ImageLinearLayout layout = (ImageLinearLayout) this.getParent();
-//				layout.get
-//				int bg = mEmpty ? R.color.cell_empty : R.color.cell_filled;
-//				setBackgroundResource(bg);
+				// 格納ブックオブジェクトの画像パスを交換スタート
 
+				// 元ブック
+				BookImage sourceBook = this.mAdapter.mImageList.get(this.sourceId);
+
+				// ターゲットブック
+				BookImage targetBook = this.mAdapter.mImageList.get(parentTargetView.mCellNumber);
+
+
+				String sourceImagePath = null;	// 元画像パス
+				String targetImagePath = null;	// ターゲット画像パス
+				Log.i("SourceBoook", sourceBook.toString());
+				Log.i("targetBook", targetBook.toString());
+
+
+				// 元ブック画像が左の場合
+				if (sourceImageCell.findViewWithTag("LEFT_PAGE") != null) {
+					sourceImagePath = sourceBook.getLeftImagePath();
+
+
+					// ターゲットブック画像が左の場合
+					if (targetImageCell.findViewWithTag("LEFT_PAGE") != null ) {
+						targetImagePath = targetBook.getLeftImagePath();
+						sourceBook.setLeftImagePath(targetImagePath);
+						targetBook.setLeftImagePath(sourceImagePath);
+
+					} else if (targetImageCell.findViewWithTag("RIGHT_PAGE") != null) {
+						// ターゲットブック画像が右の場合
+						targetImagePath = targetBook.getRightImagePath();
+						sourceBook.setLeftImagePath(targetImagePath);
+						targetBook.setRightImagePath(sourceImagePath);
+					}
+
+
+				} else if (sourceImageCell.findViewWithTag("RIGHT_PAGE") != null){
+					// 元ブック画像が右の場合
+					sourceImagePath = sourceBook.getRightImagePath();
+
+					// ターゲットブック画像が左の場合
+					if (targetImageCell.findViewWithTag("LEFT_PAGE") != null ) {
+						targetImagePath = targetBook.getLeftImagePath();
+						sourceBook.setRightImagePath(targetImagePath);
+						targetBook.setLeftImagePath(sourceImagePath);
+					} else if (targetImageCell.findViewWithTag("RIGHT_PAGE") != null) {
+						// ターゲットブック画像が右の場合
+						targetImagePath = targetBook.getRightImagePath();
+						sourceBook.setRightImagePath(targetImagePath);
+						targetBook.setRightImagePath(sourceImagePath);
+					}
+				}
 			}
+
+			d = sourceImageCell.getDrawable();
+			this.setImageDrawable(d);
+			this.mAdapter.notifyDataSetChanged();
 		}
 	}
 
@@ -166,6 +218,9 @@ public class ImageCell extends ImageView implements DragSource, DropTarget,
 			int yOffset, DragView dragView, Object dragInfo) {
 		int bg = mEmpty ? R.color.cell_empty_hover : R.color.cell_filled_hover;
 		setBackgroundResource(bg);
+		ImageCell dragInfoImageCell = (ImageCell) dragInfo;
+		ImageLinearLayout dragInfoLayout = (ImageLinearLayout) dragInfoImageCell.getParent();
+		this.sourceId = dragInfoLayout.mCellNumber;
 	}
 
 	/**

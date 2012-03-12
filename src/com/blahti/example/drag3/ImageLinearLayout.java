@@ -23,6 +23,9 @@ public class ImageLinearLayout extends FrameLayout implements DragSource,
 	public int targetId;
 	public int sourceId;
 	private ImageCellAdapter mAdapter;
+	private int LEFT_IMAGECELL_INDEX = 0;
+	private int RIGHT_IMAGECELL_INDEX = 2;
+
 
 	public ImageLinearLayout(Context context) {
 		super(context);
@@ -41,8 +44,8 @@ public class ImageLinearLayout extends FrameLayout implements DragSource,
         try {
         	ImageLinearLayout myClone = (ImageLinearLayout)super.clone();
             //参照型のフィールドにもclone()
-        	myClone.leftImage = (ImageCell) ((ImageCell)myClone.getChildAt(0)).clone();
-        	myClone.rightImage = (ImageCell) ((ImageCell)myClone.getChildAt(2)).clone();
+        	myClone.leftImage = (ImageCell) ((ImageCell)myClone.getChildAt(LEFT_IMAGECELL_INDEX)).clone();
+        	myClone.rightImage = (ImageCell) ((ImageCell)myClone.getChildAt(RIGHT_IMAGECELL_INDEX)).clone();
         	myClone.targetId = this.sourceId;
             return myClone;
         } catch (CloneNotSupportedException e) {
@@ -60,13 +63,13 @@ public class ImageLinearLayout extends FrameLayout implements DragSource,
 		ImageLinearLayout sourceView = (ImageLinearLayout) source;
 		ImageCell leftView = null;
 		ImageCell rightView = null;
-		leftView = (ImageCell) sourceView.getChildAt(0);
-		rightView = (ImageCell) sourceView.getChildAt(2);
+		leftView = (ImageCell) sourceView.getChildAt(LEFT_IMAGECELL_INDEX);
+		rightView = (ImageCell) sourceView.getChildAt(RIGHT_IMAGECELL_INDEX);
 
 		Drawable dLeft = leftView.getDrawable();
 		Drawable dRight = rightView.getDrawable();
-		((ImageView) this.getChildAt(0)).setImageDrawable(dLeft);
-		((ImageView) this.getChildAt(0)).setImageDrawable(dRight);
+		((ImageView) this.getChildAt(LEFT_IMAGECELL_INDEX)).setImageDrawable(dLeft);
+		((ImageView) this.getChildAt(RIGHT_IMAGECELL_INDEX)).setImageDrawable(dRight);
 	}
 
 	@Override
@@ -79,8 +82,8 @@ public class ImageLinearLayout extends FrameLayout implements DragSource,
 
 			Drawable dLeft = targetView.leftImage.getDrawable();
 			Drawable dRight = targetView.rightImage.getDrawable();
-			((ImageView) this.getChildAt(0)).setImageDrawable(dLeft);
-			((ImageView) this.getChildAt(2)).setImageDrawable(dRight);
+			((ImageView) this.getChildAt(LEFT_IMAGECELL_INDEX)).setImageDrawable(dLeft);
+			((ImageView) this.getChildAt(RIGHT_IMAGECELL_INDEX)).setImageDrawable(dRight);
 
 //			int i = 0;
 //			while(5 > i) {
