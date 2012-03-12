@@ -6,12 +6,13 @@ import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-public class ImageLinearLayout extends LinearLayout implements DragSource,
+public class ImageLinearLayout extends FrameLayout implements DragSource,
 		DropTarget, Cloneable {
 
 	public boolean mEmpty = true;

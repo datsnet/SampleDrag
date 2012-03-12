@@ -4,10 +4,14 @@ import java.util.List;
 
 import android.content.Context;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.ArrayAdapter;
+import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -64,12 +68,13 @@ public class ImageCellAdapter extends ArrayAdapter<BookImage> {
 		ImageLinearLayout layout = null;
 		ImageCell leftImg = null;
 		ImageCell rightImg = null;
-		ImageLinearLayout centerView = null;
+		LinearLayout centerView = null;
 
 		if (convertView == null) {
 //			layout = new ImageLinearLayout(mContext);
 			layout = new ImageLinearLayout(mContext, (ImageCellAdapter)this);
-			layout.setGravity(LinearLayout.HORIZONTAL);
+//			layout.setGravity(LinearLayout.HORIZONTAL);
+			layout.setForegroundGravity(Gravity.CENTER_HORIZONTAL);
 			layout.setOnClickListener((View.OnClickListener) mContext);
 			layout.setOnLongClickListener((View.OnLongClickListener) mContext);
 
@@ -96,25 +101,47 @@ public class ImageCellAdapter extends ArrayAdapter<BookImage> {
 
 
 			// 真ん中に両方選択する用の判定Layout追加
-			centerView = new ImageLinearLayout(mContext);
-			centerView.setGravity(LinearLayout.HORIZONTAL);
+//			centerView = new ImageLinearLayout(mContext);
+			centerView = new LinearLayout(mContext);
+
 			centerView.setTag("CENTER_PAGE");
 			LinearLayout.LayoutParams layoutParams =
-		              new LinearLayout.LayoutParams(20, LinearLayout.LayoutParams.WRAP_CONTENT);
-//			layoutParams.setMargins(5, 10, 5, 10);
+		              new LinearLayout.LayoutParams(60, 60);
+//			layoutParams.setMargins(50, 100, 50, 100);
+			
 			centerView.setLayoutParams(layoutParams);
 			centerView.setOnClickListener((View.OnClickListener) mContext);
 			centerView.setOnLongClickListener((View.OnLongClickListener) mContext);
+			centerView.setBackgroundColor(Color.YELLOW);
 
-
-			layout.addView(leftImg);
-			layout.addView(centerView);
-			layout.addView(rightImg);
+			int WC = ViewGroup.LayoutParams.WRAP_CONTENT;
+			
+			// 左レイアウトをセット
+			FrameLayout.LayoutParams layoutParamsLeft = new FrameLayout.LayoutParams(WC, WC);
+			layoutParamsLeft.gravity = Gravity.LEFT | Gravity.TOP;
+			layoutParamsLeft.leftMargin = 0;
+			layoutParamsLeft.topMargin = 0;
+			
+			// センターレイアウトをセット
+			FrameLayout.LayoutParams layoutParamsCenter = new FrameLayout.LayoutParams(40, 85);
+			layoutParamsCenter.gravity = Gravity.LEFT | Gravity.TOP;
+			layoutParamsCenter.leftMargin = 40;
+			layoutParamsCenter.topMargin = 0;
+			
+			// 右レイアウトをセット
+			FrameLayout.LayoutParams layoutParamsRight = new FrameLayout.LayoutParams(WC, WC);
+			layoutParamsRight.gravity = Gravity.LEFT | Gravity.TOP;
+			layoutParamsRight.leftMargin = 70;
+			layoutParamsRight.topMargin = 0;
+			layout.addView(leftImg, layoutParamsLeft);
+			layout.addView(centerView, layoutParamsCenter);
+			layout.addView(rightImg, layoutParamsRight);
+			
 		} else {
 			layout = (ImageLinearLayout) convertView;
 			leftImg = (ImageCell) layout.findViewWithTag("LEFT_PAGE");
 			rightImg = (ImageCell) layout.findViewWithTag("RIGHT_PAGE");
-			centerView = (ImageLinearLayout)layout.findViewWithTag("CENTER_PAGE");
+			centerView = (LinearLayout)layout.findViewWithTag("CENTER_PAGE");
 		}
 
 		layout.mCellNumber = position;
