@@ -64,7 +64,6 @@ public final class R {
         public static final int trashcan_hover=0x7f020007;
     }
     public static final class id {
-        public static final int bottom_part=0x7f080002;
         public static final int drag_layer=0x7f080000;
         public static final int image_grid_view=0x7f080001;
     }

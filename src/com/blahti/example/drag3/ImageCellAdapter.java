@@ -57,6 +57,7 @@ public class ImageCellAdapter extends ArrayAdapter<BookImage> {
 		return position;
 	}
 
+
 	/**
 	 * getView Return a view object for the grid.
 	 *
@@ -69,6 +70,7 @@ public class ImageCellAdapter extends ArrayAdapter<BookImage> {
 		ImageCell leftImg = null;
 		ImageCell rightImg = null;
 		LinearLayout centerView = null;
+		LinearLayout conditionLayout = null;
 
 		if (convertView == null) {
 //			layout = new ImageLinearLayout(mContext);
@@ -89,6 +91,7 @@ public class ImageCellAdapter extends ArrayAdapter<BookImage> {
 			// Set up to be a drop target and drag source.
 			leftImg.setOnClickListener((View.OnClickListener) mContext);
 			leftImg.setOnLongClickListener((View.OnLongClickListener) mContext);
+
 
 			rightImg = new ImageCell(mContext, (ImageCellAdapter)this);
 			// If it's not recycled, create a new ImageCell.
@@ -113,11 +116,12 @@ public class ImageCellAdapter extends ArrayAdapter<BookImage> {
 //			centerView.setLayoutParams(layoutParams);
 			centerView.setOnClickListener((View.OnClickListener) mContext);
 			centerView.setOnLongClickListener((View.OnLongClickListener) mContext);
-			centerView.setBackgroundColor(Color.YELLOW);
+//			centerView.setBackgroundColor(Color.YELLOW);
 
 
 			int WC = ViewGroup.LayoutParams.WRAP_CONTENT;
 			int MP = ViewGroup.LayoutParams.MATCH_PARENT;
+
 
 			// 左レイアウトをセット
 //			FrameLayout.LayoutParams layoutParamsLeft = new FrameLayout.LayoutParams(WC, WC);
@@ -131,18 +135,26 @@ public class ImageCellAdapter extends ArrayAdapter<BookImage> {
 			FrameLayout.LayoutParams layoutParamsCenter = new FrameLayout.LayoutParams(40, 85);
 			layoutParamsCenter.gravity = Gravity.LEFT | Gravity.TOP;
 //			layoutParamsLeft.gravity = Gravity.LEFT;
-			layoutParamsCenter.leftMargin = 40;
+			layoutParamsCenter.leftMargin = 90;
 			layoutParamsCenter.topMargin = 0;
 
 			// 右レイアウトをセット
 			FrameLayout.LayoutParams layoutParamsRight = new FrameLayout.LayoutParams(WC, WC);
 			layoutParamsRight.gravity = Gravity.LEFT | Gravity.TOP;
 //			layoutParamsRight.gravity = Gravity.LEFT;
-			layoutParamsRight.leftMargin = 70;
+//			layoutParamsRight.leftMargin = 70;
 			layoutParamsRight.topMargin = 0;
-			layout.addView(leftImg, layoutParamsLeft);
+
+			// 左画像と右画像の調整用レイアウト
+			conditionLayout = new LinearLayout(mContext);
+			LinearLayout.LayoutParams layoutParamsCondition = new LinearLayout.LayoutParams(WC, WC);
+			layoutParamsCondition.weight = 1;
+			conditionLayout.addView(leftImg, layoutParamsCondition);
+			conditionLayout.addView(rightImg, layoutParamsCondition);
+			layout.addView(conditionLayout, MP, MP);
+//			layout.addView(leftImg, layoutParamsLeft);
 			layout.addView(centerView, layoutParamsCenter);
-			layout.addView(rightImg, layoutParamsRight);
+//			layout.addView(rightImg, layoutParamsRight);
 
 		} else {
 			layout = (ImageLinearLayout) convertView;

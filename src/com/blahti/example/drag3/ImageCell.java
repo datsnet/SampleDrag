@@ -5,11 +5,14 @@ import java.util.List;
 import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.widget.AbsListView;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 /**
@@ -38,7 +41,9 @@ public class ImageCell extends ImageView implements DragSource, DropTarget,
 	private List<BookImage> mImageList;
 	private int sourceId;
 	private int LEFT_IMAGECELL_INDEX = 0;
-	private int RIGHT_IMAGECELL_INDEX = 2;
+	private int RIGHT_IMAGECELL_INDEX = 1;
+	private DragController mDragController;
+	private int erapsedCount;
 
 	/**
 	 * Constructors
@@ -83,8 +88,27 @@ public class ImageCell extends ImageView implements DragSource, DropTarget,
 	 * setDragController
 	 *
 	 */
-
 	public void setDragController(DragController dragger) {
+		mDragController = dragger;
+	}
+
+	private void setGridView() {
+		// mDragController.removeAllDropTargets();
+		int numLayoutChildren = mGrid.getChildCount();
+		for (int i = 0; i < numLayoutChildren; i++) {
+			ImageLinearLayout layout = (ImageLinearLayout) mGrid.getChildAt(i);
+			int numVisibleChildren = layout.getChildCount();
+			for (int imgCellLoopIdx = 0; imgCellLoopIdx < numVisibleChildren; imgCellLoopIdx++) {
+
+				// 左ImageCellと右ImageCellオブジェクトをターゲットにセット
+				LinearLayout parentView = (LinearLayout) layout.getChildAt(0);
+				if (parentView.getChildAt(imgCellLoopIdx) instanceof ImageCell) {
+					DropTarget view = (DropTarget) parentView
+							.getChildAt(imgCellLoopIdx);
+					mDragController.addDropTarget(view);
+				}
+			}
+		}
 	}
 
 	/**
@@ -95,38 +119,39 @@ public class ImageCell extends ImageView implements DragSource, DropTarget,
 	public void onDropCompleted(View target, boolean success) {
 		// If the drop succeeds, the image has moved elsewhere.
 		// So clear the image cell.
+
 		if (success) {
-			ImageView sourceView = (ImageView) target;
+			stopScroll();
+			// ImageView sourceView = (ImageView) target;
 			ImageCell sourceImageCell = this;
 
 			ImageCell targetImageCell = (ImageCell) target;
-			ImageLinearLayout parentTargetView = (ImageLinearLayout) target.getParent();
-			Drawable d = sourceView.getDrawable();
+			ImageLinearLayout parentTargetView = (ImageLinearLayout) target
+					.getParent().getParent();
+			Drawable d = targetImageCell.getDrawable();
 			if (d != null) {
-
 
 				// 格納ブックオブジェクトの画像パスを交換スタート
 
 				// 元ブック
-				BookImage sourceBook = this.mAdapter.mImageList.get(this.sourceId);
+				BookImage sourceBook = this.mAdapter.mImageList
+						.get(this.sourceId);
 
 				// ターゲットブック
-				BookImage targetBook = this.mAdapter.mImageList.get(parentTargetView.mCellNumber);
+				BookImage targetBook = this.mAdapter.mImageList
+						.get(parentTargetView.mCellNumber);
 
-
-				String sourceImagePath = null;	// 元画像パス
-				String targetImagePath = null;	// ターゲット画像パス
+				String sourceImagePath = null; // 元画像パス
+				String targetImagePath = null; // ターゲット画像パス
 				Log.i("SourceBoook", sourceBook.toString());
 				Log.i("targetBook", targetBook.toString());
-
 
 				// 元ブック画像が左の場合
 				if (sourceImageCell.findViewWithTag("LEFT_PAGE") != null) {
 					sourceImagePath = sourceBook.getLeftImagePath();
 
-
 					// ターゲットブック画像が左の場合
-					if (targetImageCell.findViewWithTag("LEFT_PAGE") != null ) {
+					if (targetImageCell.findViewWithTag("LEFT_PAGE") != null) {
 						targetImagePath = targetBook.getLeftImagePath();
 						sourceBook.setLeftImagePath(targetImagePath);
 						targetBook.setLeftImagePath(sourceImagePath);
@@ -138,13 +163,12 @@ public class ImageCell extends ImageView implements DragSource, DropTarget,
 						targetBook.setRightImagePath(sourceImagePath);
 					}
 
-
-				} else if (sourceImageCell.findViewWithTag("RIGHT_PAGE") != null){
+				} else if (sourceImageCell.findViewWithTag("RIGHT_PAGE") != null) {
 					// 元ブック画像が右の場合
 					sourceImagePath = sourceBook.getRightImagePath();
 
 					// ターゲットブック画像が左の場合
-					if (targetImageCell.findViewWithTag("LEFT_PAGE") != null ) {
+					if (targetImageCell.findViewWithTag("LEFT_PAGE") != null) {
 						targetImagePath = targetBook.getLeftImagePath();
 						sourceBook.setRightImagePath(targetImagePath);
 						targetBook.setLeftImagePath(sourceImagePath);
@@ -168,34 +192,27 @@ public class ImageCell extends ImageView implements DragSource, DropTarget,
 	// DropTarget interface implementation
 
 	/**
-	 * Handle an object being dropped on the DropTarget. This is the where the
-	 * drawable of the dragged view gets copied into the ImageCell.
+	 * ドラッグビューがターゲットに落とされる
 	 *
 	 * @param source
-	 *            DragSource where the drag started
+	 *            ドラッグ開始されたオブジェクト
 	 * @param x
-	 *            X coordinate of the drop location
+	 *            ドロップされたx座標
 	 * @param y
-	 *            Y coordinate of the drop location
+	 *            ドロップされたy座標
 	 * @param xOffset
-	 *            Horizontal offset with the object being dragged where the
-	 *            original touch happened
 	 * @param yOffset
-	 *            Vertical offset with the object being dragged where the
-	 *            original touch happened
 	 * @param dragView
-	 *            The DragView that's being dragged around on screen.
+	 *            ドラッグされているビュー
 	 * @param dragInfo
-	 *            Data associated with the object being dragged
 	 *
 	 */
 	public void onDrop(DragSource source, int x, int y, int xOffset,
 			int yOffset, DragView dragView, Object dragInfo) {
 		// Mark the cell so it is no longer empty.
-
 		mEmpty = false;
-//		int bg = mEmpty ? R.color.cell_empty : R.color.cell_filled;
-//		setBackgroundResource(bg);
+		// int bg = mEmpty ? R.color.cell_empty : R.color.cell_filled;
+		// setBackgroundResource(bg);
 		// The view being dragged does not actually change its parent and switch
 		// over to the ImageCell.
 		// What we do is copy the drawable from the source view.
@@ -205,61 +222,94 @@ public class ImageCell extends ImageView implements DragSource, DropTarget,
 			this.setImageDrawable(d);
 
 		}
-
+		stopScroll();
 		toast("onDrop cell " + mCellNumber);
 
 	}
 
 	/**
-	 * React to a dragged object entering the area of this DropSpot. Provide the
-	 * user with some visual feedback.
+	 *
+	 * ドロップスポットにドラッグビューが乗ったとき
 	 */
 	public void onDragEnter(DragSource source, int x, int y, int xOffset,
-			int yOffset, DragView dragView, Object dragInfo) {
+			int yOffset, DragView dragView, Object dragInfo, int xMove,
+			int yMove) {
 		int bg = mEmpty ? R.color.cell_empty_hover : R.color.cell_filled_hover;
 		setBackgroundResource(bg);
 		ImageCell dragInfoImageCell = (ImageCell) dragInfo;
-		ImageLinearLayout dragInfoLayout = (ImageLinearLayout) dragInfoImageCell.getParent();
+		ImageLinearLayout dragInfoLayout = (ImageLinearLayout) dragInfoImageCell
+				.getParent().getParent();
 		this.sourceId = dragInfoLayout.mCellNumber;
 	}
 
-	/**
-	 * React to something being dragged over the drop target.
-	 */
 	public void onDragOver(DragSource source, int x, int y, int xOffset,
-			int yOffset, DragView dragView, Object dragInfo) {
+			int yOffset, DragView dragView, Object dragInfo, int xMove,
+			int yMove) {
+		// 画面端ならスクロール
+		if (yMove - ((View) dragView).getHeight() + 20 < 0) {
+//			Log.i("DragInfo", String.valueOf(((View) dragView).getHeight() / 2));
+			isLoop = true;
+			ishighLoop = true;
+			startPrevScroll();
+
+			mDragController.setErapsedCount();
+		} else if (yMove + ((View) dragView).getHeight() + 20 > getRootView()
+				.getHeight()) {
+//			Log.i("DragInfo", String.valueOf(((View) dragView).getHeight() / 2));
+			isLoop = true;
+			ishighLoop = true;
+			startNextScroll();
+
+			mDragController.setErapsedCount();
+		} else {
+			stopScroll();
+		}
 	}
 
 	/**
-	 * React to a drag
+	 * ドラッグが終了したとき
 	 */
 	public void onDragExit(DragSource source, int x, int y, int xOffset,
-			int yOffset, DragView dragView, Object dragInfo) {
+			int yOffset, DragView dragView, Object dragInfo, int xMove,
+			int yMove) {
 		setBackgroundResource(0);
+
+		// 画面端ならスクロール
+		if (yMove - ((View) dragView).getHeight() + 20 < 0) {
+//			Log.i("DragInfo", String.valueOf(((View) dragView).getHeight() / 2));
+			isLoop = true;
+			ishighLoop = true;
+			startPrevScroll();
+
+			mDragController.setErapsedCount();
+		} else if (yMove + ((View) dragView).getHeight() + 20 > getRootView()
+				.getHeight()) {
+//			Log.i("DragInfo", String.valueOf(((View) dragView).getHeight() / 2));
+			isLoop = true;
+			ishighLoop = true;
+			startNextScroll();
+
+			mDragController.setErapsedCount();
+		} else {
+			stopScroll();
+		}
+
 	}
 
 	/**
-	 * Check if a drop action can occur at, or near, the requested location.
-	 * This may be called repeatedly during a drag, so any calls should return
-	 * quickly.
 	 *
 	 * @param source
-	 *            DragSource where the drag started
+	 *            ドラッグ開始されたオブジェクト
 	 * @param x
-	 *            X coordinate of the drop location
+	 *            ドロップされたx座標
 	 * @param y
-	 *            Y coordinate of the drop location
+	 *            ドロップされたy座標
 	 * @param xOffset
-	 *            Horizontal offset with the object being dragged where the
-	 *            original touch happened
 	 * @param yOffset
-	 *            Vertical offset with the object being dragged where the
-	 *            original touch happened
 	 * @param dragView
-	 *            The DragView that's being dragged around on screen.
+	 *            ドラッグされているビュー
 	 * @param dragInfo
-	 *            Data associated with the object being dragged
-	 * @return True if the drop will be accepted, false otherwise.
+	 * @return ドロップ条件が合えばtrue
 	 */
 	public boolean acceptDrop(DragSource source, int x, int y, int xOffset,
 			int yOffset, DragView dragView, Object dragInfo) {
@@ -358,4 +408,97 @@ public class ImageCell extends ImageView implements DragSource, DropTarget,
 		Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
 	} // end toast
 
+	/**
+	 * リストビューの取得
+	 *
+	 * @return
+	 */
+	private AbsListView getGridView() {
+		return mGrid;
+	}
+
+	// スクロール処理系
+	private void startPrevScroll() {
+
+	    // 経過カウント数によってスクロールスピードを切り替え
+		if (mDragController.getErapsedCount() >= 20) {
+			getHandler().postDelayed(highSpeedPrevScroll, 200);
+			isLoop = false;
+		} else {
+			getHandler().postDelayed(prevScroll, 200);
+			ishighLoop = false;
+		}
+	}
+
+	private void startNextScroll() {
+
+	    // 経過カウント数によってスクロールスピードを切り替え
+		if (mDragController.getErapsedCount() >= 20) {
+			getHandler().postDelayed(highSpeedNextScroll, 200);
+			isLoop = false;
+		} else {
+			getHandler().postDelayed(nextScroll, 200);
+			ishighLoop = false;
+		}
+
+	}
+
+	public void stopScroll() {
+		mDragController.resetErapsedCount();
+		ishighLoop = false;
+		isLoop = false;
+	}
+
+	public boolean isLoop = false;
+	public boolean ishighLoop = false;
+	private Runnable prevScroll = new Runnable() {
+		@Override
+		public void run() {
+			getGridView().smoothScrollBy(-10, 200);
+			if (isLoop) {
+				startPrevScroll();
+			} else {
+//				Log.i("isLoop", String.valueOf(isLoop));
+			}
+		}
+	};
+	private Runnable highSpeedPrevScroll = new Runnable() {
+		@Override
+		public void run() {
+			getGridView().smoothScrollBy(-50, 10);
+			if (ishighLoop) {
+				startPrevScroll();
+			} else {
+//				Log.i("isLoop", String.valueOf(isLoop));
+			}
+		}
+	};
+	private Runnable nextScroll = new Runnable() {
+		@Override
+		public void run() {
+			getGridView().smoothScrollBy(10, 200);
+			if (isLoop) {
+				startNextScroll();
+			} else {
+//				Log.i("isLoop", String.valueOf(isLoop));
+			}
+		}
+	};
+
+	private Runnable highSpeedNextScroll = new Runnable() {
+		@Override
+		public void run() {
+			getGridView().smoothScrollBy(50, 10);
+			if (ishighLoop) {
+				startNextScroll();
+			} else {
+//				Log.i("ishighLoop", String.valueOf(ishighLoop));
+			}
+		}
+	};
+
+	private boolean isScrollArea() {
+		return isLoop;
+
+	}
 } // end ImageCell

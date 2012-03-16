@@ -88,20 +88,22 @@ public class DragActivity extends Activity implements View.OnLongClickListener,
 		else {
 			bookImage = new ArrayList<BookImage>();
 			// SDカードに入っているデータを取得
-//			boolean imageChk = loadFromSDCard();
+			// boolean imageChk = loadFromSDCard();
 			boolean imageChk = loadFromSelectedPath("/mnt/sdcard/sample-image");
 			if (imageChk) {
-				mAdapter = new ImageCellAdapter(this, R.layout.demo,
-						bookImage);
+				mAdapter = new ImageCellAdapter(this, R.layout.demo, bookImage);
 				gridView.setAdapter(mAdapter);
 			} else if (!imageChk) {
 				Toast.makeText(getApplicationContext(), "画像が読み込めませんでした",
 						Toast.LENGTH_LONG).show();
 			}
 		}
-
+		gridView.setFastScrollEnabled(true);
+		gridView.setClipChildren(false);
 		mDragController = new DragController(this);
 		mDragLayer = (DragLayer) findViewById(R.id.drag_layer);
+		mDragController.mGrid = gridView;
+		mDragController.mDragLayer = mDragLayer;
 		mDragLayer.setDragController(mDragController);
 		mDragLayer.setGridView(gridView);
 
@@ -140,10 +142,9 @@ public class DragActivity extends Activity implements View.OnLongClickListener,
 			return false;
 		}
 		if (v instanceof LinearLayout) {
-			ImageLinearLayout parent = (ImageLinearLayout)v.getParent();
+			ImageLinearLayout parent = (ImageLinearLayout) v.getParent();
 			return startDrag(parent);
 		}
-
 
 		return startDrag(v);
 	}
@@ -228,28 +229,31 @@ public class DragActivity extends Activity implements View.OnLongClickListener,
 	}
 
 	private boolean loadFromSelectedPath(String path) {
-//		private List<string> imgList = new ArrayList<string>();   // 画像PATH格納用
-        // 外部ストレージ(SDカード)のデレクトリPATHを取得
-        File file = new File(path);
+		// private List<string> imgList = new ArrayList<string>(); // 画像PATH格納用
+		// 外部ストレージ(SDカード)のデレクトリPATHを取得
+		File file = new File(path);
 
-        String imageFiles[] = file.list();
-        // 指定ディレクトリ内のファイル検索
-        int i = 0;
+		String imageFiles[] = file.list();
+		// 指定ディレクトリ内のファイル検索
+		int i = 0;
 		while (imageFiles.length > i) {
 
-			BookImage bImage = new BookImage();
+			if (imageFiles[i].endsWith("jpg")
+					|| imageFiles[i].endsWith("JPG")) {
+				BookImage bImage = new BookImage();
 
-			bImage.setLeftImagePath(path + "/" + imageFiles[i]);
-			if (imageFiles.length > i + 1) {
-				bImage.setRightImagePath(path + "/" + imageFiles[++i]);
-			} else {
-				Log.i("ttt", imageFiles[i]);
+				bImage.setLeftImagePath(path + "/" + imageFiles[i]);
+				if (imageFiles.length > i + 1) {
+					bImage.setRightImagePath(path + "/" + imageFiles[++i]);
+				} else {
+					Log.i("ttt", imageFiles[i]);
+				}
+
+				this.bookImage.add(bImage);
 			}
-
-			this.bookImage.add(bImage);
 			i++;
-		}
 
+		}
 
 		return true;
 

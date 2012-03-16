@@ -36,12 +36,9 @@ import android.widget.Toast;
  * that implements the DragSource interface and ends in an object that
  * implements the DropTarget interface.
  *
- * <p>
- * This class used DragLayer in the Android Launcher activity as a model. It is
- * a bit different in several respects: (1) it supports dragging to a grid view
- * and trash area; (2) it dynamically adds drop targets when a drag-drop
- * sequence begins. The child views of the GridView are assumed to implement the
- * DropTarget interface.
+ * ドラッグ操作をサポートする大元カスタムFrameLAyoutクラス
+ * DragSourceからドラッグが始まり、DragTargetで終了
+ *
  */
 public class DragLayer extends FrameLayout implements
 		DragController.DragListener {
@@ -49,15 +46,6 @@ public class DragLayer extends FrameLayout implements
 	GridView mGridView;
 	List<BookImage> mImageList;
 
-	/**
-	 * Used to create a new DragLayer from XML.
-	 *
-	 * @param context
-	 *            The application's context.
-	 * @param attrs
-	 *            The attribtues set containing the Workspace's customization
-	 *            values.
-	 */
 	public DragLayer(Context context, AttributeSet attrs) {
 		super(context, attrs);
 	}
@@ -88,7 +76,7 @@ public class DragLayer extends FrameLayout implements
 	}
 
 	/**
-	 * Get the value of the GridView property.
+	 * GridViewを返す
 	 *
 	 * @return GridView
 	 */
@@ -99,7 +87,7 @@ public class DragLayer extends FrameLayout implements
 	} // end getGridView
 
 	/**
-	 * Set the value of the GridView property.
+	 * GridViewをセット
 	 *
 	 * @param newValue
 	 *            GridView
@@ -115,7 +103,7 @@ public class DragLayer extends FrameLayout implements
 	// DragListener Interface Methods
 
 	/**
-	 * A drag has begun.
+	 * ドラッグ開始
 	 *
 	 * @param source
 	 *            An object representing where the drag originated
@@ -142,13 +130,33 @@ public class DragLayer extends FrameLayout implements
 					for (int imgCellLoopIdx = 0; imgCellLoopIdx < numVisibleChildren; imgCellLoopIdx++) {
 
 						// 左ImageCellと右ImageCellオブジェクトをターゲットにセット
-						if (layout.getChildAt(imgCellLoopIdx) instanceof ImageCell) {
-							DropTarget view = (DropTarget) layout
+						LinearLayout parentView = (LinearLayout) layout.getChildAt(0);
+						if (parentView.getChildAt(imgCellLoopIdx) instanceof ImageCell) {
+							DropTarget view = (DropTarget) parentView
 									.getChildAt(imgCellLoopIdx);
 								mDragController.addDropTarget(view);
 						}
 					}
 				}
+
+//				int numLayoutChildren = mGridView.getCount();
+//				for (int i = 0; i < numLayoutChildren; i++) {
+//					ImageLinearLayout layout = (ImageLinearLayout) mGridView
+//							.getItemAtPosition(i);
+//					int numVisibleChildren = layout.getChildCount();
+//					for (int imgCellLoopIdx = 0; imgCellLoopIdx < numVisibleChildren; imgCellLoopIdx++) {
+//
+//						// 左ImageCellと右ImageCellオブジェクトをターゲットにセット
+//						LinearLayout parentView = (LinearLayout) layout
+//								.getChildAt(0);
+//						if (parentView.getChildAt(imgCellLoopIdx) instanceof ImageCell) {
+//							DropTarget view = (DropTarget) parentView
+//									.getChildAt(imgCellLoopIdx);
+//							mDragController.addDropTarget(view);
+//						}
+//					}
+//				}
+
 			} else if (source instanceof ImageLinearLayout) {
 				int numVisibleChildren = mGridView.getChildCount();
 				for (int i = 0; i < numVisibleChildren; i++) {
@@ -161,7 +169,7 @@ public class DragLayer extends FrameLayout implements
 	}
 
 	/**
-	 * A drag-drop operation has eneded.
+	 * ドラッグドロップ操作終了
 	 */
 
 	public void onDragEnd() {
@@ -171,6 +179,37 @@ public class DragLayer extends FrameLayout implements
 	/**
  */
 	// Other Methods
+
+
+	public void setTargetsinGrid(Object source) {
+//		mDragController.removeAllDropTargets();
+		if (source instanceof ImageCell) {
+			int numLayoutChildren = mGridView.getChildCount();
+			for (int i = 0; i < numLayoutChildren; i++) {
+				ImageLinearLayout layout = (ImageLinearLayout) mGridView
+						.getChildAt(i);
+				int numVisibleChildren = layout.getChildCount();
+				for (int imgCellLoopIdx = 0; imgCellLoopIdx < numVisibleChildren; imgCellLoopIdx++) {
+
+					// 左ImageCellと右ImageCellオブジェクトをターゲットにセット
+					LinearLayout parentView = (LinearLayout) layout
+							.getChildAt(0);
+					if (parentView.getChildAt(imgCellLoopIdx) instanceof ImageCell) {
+						DropTarget view = (DropTarget) parentView
+								.getChildAt(imgCellLoopIdx);
+						mDragController.addDropTarget(view);
+					}
+				}
+			}
+		} else if (source instanceof ImageLinearLayout) {
+			int numVisibleChildren = mGridView.getChildCount();
+			for (int i = 0; i < numVisibleChildren; i++) {
+				DropTarget view = (DropTarget) mGridView.getChildAt(i);
+				mDragController.addDropTarget(view);
+			}
+		}
+	}
+
 
 	/**
 	 * Show a string on the screen via Toast.

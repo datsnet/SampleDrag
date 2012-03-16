@@ -22,7 +22,7 @@ package com.blahti.example.drag3;
 import android.view.View;
 
 /**
- * Interface defining an object where drag operations originate.
+ * ドラッグされる元オブジェクト
  *
  */
 public interface DragSource {

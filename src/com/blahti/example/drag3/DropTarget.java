@@ -31,17 +31,20 @@ public interface DropTarget {
     /**
      * Handle an object being dropped on the DropTarget
      *
-     * @param source DragSource where the drag started
-     * @param x X coordinate of the drop location
-     * @param y Y coordinate of the drop location
-     * @param xOffset Horizontal offset with the object being dragged where the original
-     *          touch happened
-     * @param yOffset Vertical offset with the object being dragged where the original
-     *          touch happened
-     * @param dragView The DragView that's being dragged around on screen.
-     * @param dragInfo Data associated with the object being dragged
+	 * @param source
+	 *            ドラッグ開始されたオブジェクト
+	 * @param x
+	 *            ドロップされたx座標
+	 * @param y
+	 *            ドロップされたy座標
+	 * @param xOffset
+	 * @param yOffset
+	 * @param dragView
+	 *            ドラッグされているビュー
+	 * @param dragInfo
      *
      */
+
     void onDrop(DragSource source, int x, int y, int xOffset, int yOffset,
             DragView dragView, Object dragInfo);
 
@@ -49,34 +52,36 @@ public interface DropTarget {
      * React to something started to be dragged.
      */
     void onDragEnter(DragSource source, int x, int y, int xOffset, int yOffset,
-            DragView dragView, Object dragInfo);
+            DragView dragView, Object dragInfo, int xMove, int yMove);
 
     /**
      * React to something being dragged over the drop target.
      */
     void onDragOver(DragSource source, int x, int y, int xOffset, int yOffset,
-            DragView dragView, Object dragInfo);
+            DragView dragView, Object dragInfo, int xMove, int yMove);
 
     /**
      * React to a drag
      */
     void onDragExit(DragSource source, int x, int y, int xOffset, int yOffset,
-            DragView dragView, Object dragInfo);
+    		DragView dragView, Object dragInfo, int xMove, int yMove);
 
     /**
      * Check if a drop action can occur at, or near, the requested location.
      * This may be called repeatedly during a drag, so any calls should return
      * quickly.
      *
-     * @param source DragSource where the drag started
-     * @param x X coordinate of the drop location
-     * @param y Y coordinate of the drop location
-     * @param xOffset Horizontal offset with the object being dragged where the
-     *            original touch happened
-     * @param yOffset Vertical offset with the object being dragged where the
-     *            original touch happened
-     * @param dragView The DragView that's being dragged around on screen.
-     * @param dragInfo Data associated with the object being dragged
+	 * @param source
+	 *            ドラッグ開始されたオブジェクト
+	 * @param x
+	 *            ドロップされたx座標
+	 * @param y
+	 *            ドロップされたy座標
+	 * @param xOffset
+	 * @param yOffset
+	 * @param dragView
+	 *            ドラッグされているビュー
+	 * @param dragInfo
      * @return True if the drop will be accepted, false otherwise.
      */
     boolean acceptDrop(DragSource source, int x, int y, int xOffset, int yOffset,
@@ -108,4 +113,5 @@ public interface DropTarget {
     void getLocationOnScreen(int[] loc);
     int getLeft();
     int getTop();
+	public void setDragController(DragController dragger);
 }
